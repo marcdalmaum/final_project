@@ -11,7 +11,7 @@ def get_flight(source,destination,date):
     driver = webdriver.Chrome(ChromeDriverManager().install())
     url = f'https://www.kayak.es/flights/{source}-{destination}/{date}-flexible-2days?sort=bestflight_a'
     driver.get(url)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable(('xpath', '//div[@class = "dDYU-close dDYU-mod-variant-default dDYU-mod-size-default"]'))).click()
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable(('xpath', '//div[@class = "dDYU-close dDYU-mod-variant-default dDYU-mod-size-default"]'))).click()
     flight = driver.find_element('xpath', '//div[@class = "inner-grid keel-grid"]')
 
     return flight
@@ -23,7 +23,10 @@ def get_flight_details(flight):
     flight_details = []
 
     #date
-    flight_date = elementSoup.find("span",{"class": "flag"}).get_text() #WARNING!
+    try:
+        flight_date = elementSoup.find("span",{"class": "flag"}).get_text()
+    except:
+        flight_date = elementSoup.find("div",{"class": "bottom"}).get_text()
     flight_details.append(flight_date)
 
     #depart time
@@ -40,7 +43,7 @@ def get_flight_details(flight):
 
     #price
     temp_price = elementSoup.find("div", {"class": "col-price result-column js-no-dtog"})
-    price = temp_price.find("span", {"class": "price-text"}).get_text().strip().replace(u'\xa0', u' ') #WARNING!
+    price = temp_price.find("span", {"class": "price-text"}).get_text().strip().replace(u'\xa0', u'')
     flight_details.append(price)
 
     return flight_details

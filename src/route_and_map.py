@@ -3,6 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import itertools
+import pandas as pd
 
 def get_G(airports, routes):
     G = nx.from_pandas_edgelist(routes,"source","destination",edge_attr="distance",create_using=nx.DiGraph())
@@ -46,7 +47,7 @@ def find_route(G,start_airport,must_go=[]):
             while x:
                 next_route = nx.shortest_path(G,start,list(pos_dest)[count],weight='distance')
                 count += 1
-                if len(next_route) <= 4:
+                if len(next_route) <= 3:
                     x=False
                     count = 0
                 elif len(pos_dest) == count:
@@ -109,3 +110,25 @@ def get_map(G, sites, sites_pairs):
             m.scatter(x2, y2,color='red',s=50,zorder=2)
     
     return plt.show()
+
+def get_route(airports, sites):
+
+    final_route = {"City": [], "Country": [], "Continent": [], "Airport": [], "IATA": []}
+    city = []
+    country = []
+    continent = []
+    airport = []
+
+    for i in range(len(sites)):
+        city.append(airports[(airports['IATA'] == sites[i])].values[0][1])
+        country.append(airports[(airports['IATA'] == sites[i])].values[0][2])
+        continent.append(airports[(airports['IATA'] == sites[i])].values[0][7])
+        airport.append(airports[(airports['IATA'] == sites[i])].values[0][0])
+
+    final_route["City"] = city
+    final_route["Country"] = country
+    final_route["Continent"] = continent
+    final_route["Airport"] = airport
+    final_route["IATA"] = sites
+
+    return pd.DataFrame.from_dict(final_route)

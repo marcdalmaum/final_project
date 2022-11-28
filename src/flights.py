@@ -6,17 +6,13 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 
-def get_flight(source,destination,date):
+def get_flight_details(source,destination,date):
     
     driver = webdriver.Chrome(ChromeDriverManager().install())
     url = f'https://www.kayak.es/flights/{source}-{destination}/{date}-flexible-2days?sort=bestflight_a'
     driver.get(url)
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable(('xpath', '//div[@class = "dDYU-close dDYU-mod-variant-default dDYU-mod-size-default"]'))).click()
+    WebDriverWait(driver, 30).until(EC.element_to_be_clickable(('xpath', '//div[@class = "dDYU-close dDYU-mod-variant-default dDYU-mod-size-default"]'))).click()
     flight = driver.find_element('xpath', '//div[@class = "inner-grid keel-grid"]')
-
-    return flight
-
-def get_flight_details(flight):
 
     elementHTML = flight.get_attribute('outerHTML')
     elementSoup = BeautifulSoup(elementHTML,'html.parser')
@@ -29,9 +25,15 @@ def get_flight_details(flight):
         flight_date = elementSoup.find("div",{"class": "bottom"}).get_text()
     flight_details.append(flight_date)
 
+    #source
+    flight_details.append(source)
+
     #depart time
     depart_time = elementSoup.find("span",{"class": "depart-time base-time"}).get_text()
     flight_details.append(depart_time)
+
+    #destination
+    flight_details.append(destination)
 
     #arrival time
     arrival_time = elementSoup.find("span",{"class": "arrival-time base-time"}).get_text()

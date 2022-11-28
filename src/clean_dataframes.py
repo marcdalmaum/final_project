@@ -33,6 +33,12 @@ def drop_null_values():
 
 drop_null_values()
 
+def get_continents():
+    continents = {"AS":"Asia", "AF":"Africa", "NA":"North America","SA":"South America", "EU":"Europe", "OC":"Oceania"}
+    airports_df['continent'] = airports_df['continent_code'].map(continents)
+
+get_continents()
+
 airports_df.to_csv('../data/airports_cleaned.csv', index=False)
 
 

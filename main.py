@@ -7,7 +7,6 @@ import datetime as dt
 
 start_airport = ""
 must_go = []
-dont_go = []
 start_date = ""
 
 airports = pd.read_csv("data/airports_cleaned.csv", keep_default_na=False)
@@ -40,8 +39,6 @@ start_airport_st = form.selectbox("Select your departure airport:", options = ai
 
 must_go_st = form.multiselect("Select some cities you would like to visit:", options = airports["airport"].tolist())
 
-dont_go_st = form.multiselect("Want to avoid visiting some cities?", options = airports["airport"].tolist())
-
 dates_st = form.date_input("Select which day you want to start the adventure:", value=None, min_value=dt.datetime.today(), 
                                     max_value=dt.datetime.today() + dt.timedelta(days=365), key=None)
 
@@ -54,10 +51,6 @@ if submit:
     must_go = []
     for i in must_go_st:
         must_go.append(airports.loc[airports["airport"] == i, "IATA"].iloc[0])
-    
-    dont_go = []
-    for i in dont_go_st:
-        dont_go.append(airports.loc[airports["airport"] == i, "IATA"].iloc[0])
 
     start_date = str(dates_st)
 
@@ -69,7 +62,7 @@ if  start_airport != "" and start_date != "":
         st.subheader("Your next trip:")
 
     G = rm.get_G(airports, routes)
-    sites = rm.find_route(G, start_airport, must_go, dont_go)
+    sites = rm.find_route(G, start_airport, must_go)
     sites_pairs = rm.get_sites_pairs(sites)
 
     map = rm.get_map(G, sites, sites_pairs)

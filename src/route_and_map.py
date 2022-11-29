@@ -13,7 +13,7 @@ def get_G(airports, routes):
 
     return G
 
-def find_route(G,start_airport,must_go=[],dont_go=[]):
+def find_route(G,start_airport,must_go=[]):
 
     start = start_airport
     sites = []
@@ -33,9 +33,7 @@ def find_route(G,start_airport,must_go=[],dont_go=[]):
         # Taking only the airports that are in the continents that the route has not yet passed
         pos_airports = [x for x,y in G.nodes(data=True) if (y['continent_code'] in continents)]
         # Adding airports of the "must_go" list
-        pos_airports = pos_airports + must_go
-        # Deleting airports of the "dont_go" list
-        pos_airports = [x for x in pos_airports if x not in dont_go] 
+        pos_airports = pos_airports + must_go 
         # Getting the distances to the nearest airports
         pos_dest = nx.single_source_dijkstra(G,start,weight='distance')[0]
         # Removing the first airport (same airport)
@@ -44,17 +42,15 @@ def find_route(G,start_airport,must_go=[],dont_go=[]):
         pos_dest = {key: value for key, value in pos_dest.items() if key in pos_airports}
 
         if len(pos_dest) > 0:
-            x = True
-            count = 0
-            while x:
-                next_route = nx.shortest_path(G,start,list(pos_dest)[count],weight='distance')
-                count += 1
-                if len(next_route) <= 3:
-                    x=False
-                    count = 0
-                elif len(pos_dest) == count:
-                    next_route = nx.shortest_path(G,start,list(pos_dest)[0],weight='distance')
-                    x=False
+            all_routes = []
+            try:
+                for i in range(50):
+                    all_routes.append(nx.shortest_path(G,start,list(pos_dest)[i],weight='distance'))
+                    next_route = min(all_routes, key=len)
+            except:
+                for i in range(len(pos_dest)):
+                    all_routes.append(nx.shortest_path(G,start,list(pos_dest)[i],weight='distance'))
+                    next_route = min(all_routes, key=len)
                 
             for i in range(len(next_route)):
                 if i > 0:

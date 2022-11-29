@@ -16,11 +16,19 @@ routes = pd.read_csv("data/routes_cleaned.csv", keep_default_na=False)
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
 st.markdown("<h1 style='text-align: center;'>Ready for a world tour? 🚀</h1>", unsafe_allow_html=True)
+hide_table_row_index = """
+            <style>
+            thead tr th:first-child {display:none}
+            tbody th {display:none}
+            </style>
+            """
+st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 header = st.container()
 maps = st.container()
 distance = st.container()
 route = st.container()
+flights = st.container()
 
 # STREAMLIT SIDEBAR
 
@@ -64,11 +72,18 @@ if  start_airport != "" and start_date != "":
     with route:
         st.table(final_route)
 
-    # for i in range(len(sites_pairs)):
-    #     flight = fl.get_flight(sites_pairs[i][0],sites_pairs[i][1],start_date)
-    #     flight_details = fl.get_flight_details(flight)
+    flights_df = pd.DataFrame(columns = ['Departure date', 'Departure airport', 'Departure time', 'Arrival airport', 'Arrival time', 'Airline', 'Flight price'])
 
-    #     next_date = (dt.datetime.strptime(start_date,"%Y-%m-%d") + dt.timedelta(days=7)).date()
-    #     start_date = str(next_date)
+    with flights:
+            pl = st.empty()
 
-    # flight_details
+    for i in range(len(sites_pairs)):
+        flight_details = fl.get_flight_details(sites_pairs[i][0],sites_pairs[i][1],start_date)
+
+        next_date = (dt.datetime.strptime(start_date,"%Y-%m-%d") + dt.timedelta(days=7)).date()
+        start_date = str(next_date)
+
+        flights_df.loc[len(flights_df.index)] = flight_details
+
+        with flights:
+            pl.table(flights_df)

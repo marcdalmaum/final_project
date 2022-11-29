@@ -13,7 +13,7 @@ def get_G(airports, routes):
 
     return G
 
-def find_route(G,start_airport,must_go=[]):
+def find_route(G,start_airport,must_go=[],dont_go=[]):
 
     start = start_airport
     sites = []
@@ -34,6 +34,8 @@ def find_route(G,start_airport,must_go=[]):
         pos_airports = [x for x,y in G.nodes(data=True) if (y['continent_code'] in continents)]
         # Adding airports of the "must_go" list
         pos_airports = pos_airports + must_go
+        # Deleting airports of the "dont_go" list
+        pos_airports = [x for x in pos_airports if x not in dont_go] 
         # Getting the distances to the nearest airports
         pos_dest = nx.single_source_dijkstra(G,start,weight='distance')[0]
         # Removing the first airport (same airport)

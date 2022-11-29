@@ -39,8 +39,10 @@ def get_continents():
 
 get_continents()
 
-airports_df.to_csv('../data/airports_cleaned.csv', index=False)
+def get_airports():
+    airports_df["airport"] = airports_df["city"] +" ("+ airports_df["IATA"] +")"
 
+get_airports()
 
 def get_routes_df():
     routes = pd.read_csv("../data/routes.csv", header=None)
@@ -75,4 +77,7 @@ def get_distance():
 
 routes_df["distance"] = get_distance()
 
+airports_df = airports_df[airports_df.IATA.isin(list(routes_df.source) + list(routes_df.destination))]
+
+airports_df.to_csv('../data/airports_cleaned.csv', index=False)
 routes_df.to_csv('../data/routes_cleaned.csv', index=False)

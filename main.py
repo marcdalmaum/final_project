@@ -7,6 +7,7 @@ import datetime as dt
 
 start_airport = ""
 must_go = []
+dont_go = []
 start_date = ""
 
 airports = pd.read_csv("data/airports_cleaned.csv", keep_default_na=False)
@@ -34,19 +35,30 @@ flights = st.container()
 
 form = st.sidebar.form(key='keyword-input')
 
-start_airport_st = form.selectbox("Select your departure airport", options = airports["IATA"].tolist(), 
-                                            index=airports["IATA"].tolist().index("BCN"))
+start_airport_st = form.selectbox("Select your departure airport:", options = airports["airport"].tolist(), 
+                                            index=airports["airport"].tolist().index("Barcelona (BCN)"))
 
-must_go_st = form.multiselect("Select some cities you would like to visit", options = airports["IATA"].tolist())
+must_go_st = form.multiselect("Select some cities you would like to visit:", options = airports["airport"].tolist())
 
-dates_st = form.date_input("Select which day you want to start the adventure", value=None, min_value=dt.datetime.today(), 
+dont_go_st = form.multiselect("Want to avoid visiting some cities?", options = airports["airport"].tolist())
+
+dates_st = form.date_input("Select which day you want to start the adventure:", value=None, min_value=dt.datetime.today(), 
                                     max_value=dt.datetime.today() + dt.timedelta(days=365), key=None)
 
 submit = form.form_submit_button('Plan your trip!')
 
 if submit:
-    start_airport = str(start_airport_st)
-    must_go = must_go_st
+
+    start_airport = airports.loc[airports["airport"] == str(start_airport_st), "IATA"].iloc[0]
+
+    must_go = []
+    for i in must_go_st:
+        must_go.append(airports.loc[airports["airport"] == i, "IATA"].iloc[0])
+    
+    dont_go = []
+    for i in dont_go_st:
+        dont_go.append(airports.loc[airports["airport"] == i, "IATA"].iloc[0])
+
     start_date = str(dates_st)
 
 # GET ROUTE AND FLIGHTS
@@ -57,7 +69,7 @@ if  start_airport != "" and start_date != "":
         st.subheader("Your next trip:")
 
     G = rm.get_G(airports, routes)
-    sites = rm.find_route(G, start_airport, must_go)
+    sites = rm.find_route(G, start_airport, must_go, dont_go)
     sites_pairs = rm.get_sites_pairs(sites)
 
     map = rm.get_map(G, sites, sites_pairs)

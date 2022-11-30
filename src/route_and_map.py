@@ -5,6 +5,7 @@ from mpl_toolkits.basemap import Basemap
 import itertools
 import pandas as pd
 
+# Creating a network graph with the networkx library
 def get_G(airports, routes):
     G = nx.from_pandas_edgelist(routes,"source","destination",edge_attr="distance",create_using=nx.DiGraph())
     nx.set_node_attributes(G,airports.continent_code.copy().rename(airports.IATA).to_dict(),'continent_code')
@@ -13,6 +14,7 @@ def get_G(airports, routes):
 
     return G
 
+# Creating the most optimized route possible, given the airport of departure and the airports through which you want to pass
 def find_route(G,start_airport,must_go=[]):
 
     start = start_airport
@@ -43,25 +45,32 @@ def find_route(G,start_airport,must_go=[]):
 
         if len(pos_dest) > 0:
             all_routes = []
+            # Obtaining the distances to the 50 nearest airports and selecting the route with the fewest stops
             try:
                 for i in range(50):
                     all_routes.append(nx.shortest_path(G,start,list(pos_dest)[i],weight='distance'))
                     next_route = min(all_routes, key=len)
+
+            # Obtaining the distances to the nearest airports and selecting the route with the fewest stops
             except:
                 for i in range(len(pos_dest)):
                     all_routes.append(nx.shortest_path(G,start,list(pos_dest)[i],weight='distance'))
                     next_route = min(all_routes, key=len)
                 
             for i in range(len(next_route)):
+                # Appending the next route to a list
                 if i > 0:
                     sites.append(next_route[i])
+                # Removing from the list of continents the continents of the "next_route" airports
                 if G.nodes[next_route[i]]['continent_code'] in continents:
                     continents.remove(G.nodes[next_route[i]]['continent_code'])
+                # Removing from the "must_go" list if an airport appears in the "next_route" list
                 if next_route[i] in must_go:
                     must_go.remove(next_route[i])
                 start = next_route[i]
 
-    last_route = nx.shortest_path(G,sites[-1],start_airport,weight='distance')
+    # Calculating the last route
+    last_route = nx.shortest_path(G,sites[-1],start_airport)
     for i in range(len(last_route)):
         if i > 0:
             sites.append(last_route[i])
@@ -70,6 +79,7 @@ def find_route(G,start_airport,must_go=[]):
 
     return sites
 
+# Creating pairs between the airports on the route in order to be able to calculate the distance and plot it on a map
 def get_sites_pairs(sites):
 
     sites_pairs = [(x,y) for x, y in itertools.zip_longest(sites, sites[1:])]
@@ -77,6 +87,7 @@ def get_sites_pairs(sites):
 
     return sites_pairs
 
+# Calculating the total distance of the trip
 def get_total_distance(G, sites_pairs):
 
     distance = 0
@@ -86,6 +97,7 @@ def get_total_distance(G, sites_pairs):
 
     return distance
 
+# Plotting the route on a map
 def get_map(G, sites, sites_pairs):
 
     plt.figure(figsize = (30,20))
@@ -109,6 +121,7 @@ def get_map(G, sites, sites_pairs):
     
     return plt.show()
 
+# Creating a dataframe with the details of the route
 def get_route(airports, sites):
 
     final_route = {"City": [], "Country": [], "Continent": [], "Airport": [], "IATA": []}

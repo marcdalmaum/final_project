@@ -4,6 +4,9 @@ import pycountry_convert as pc
 import numpy as np
 import geopy.distance
 
+# ---------------------------------------- AIRPORTS DATABASE ----------------------------------------
+
+# Importing the CSV document with all the airports
 def get_airports_df():
     airports_df = pd.read_csv("../data/airports.csv", header=None)
     airports_df.columns = ["airport_id", "airport_name", "city", "country", "IATA", "ICAO", "latitude", "longitude", 
@@ -13,6 +16,7 @@ def get_airports_df():
 
 airports_df = get_airports_df()
 
+# Getting the country code with the pycountry_convert library
 def get_continent_code():
     country_codes = []
     for _, row in airports_df.iterrows():
@@ -26,6 +30,7 @@ def get_continent_code():
 
 airports_df["continent_code"] = get_continent_code()
 
+# Dropping null values
 def drop_null_values():
     for column in airports_df:
         airports_df[column] = airports_df[column].replace([r"\N"],np.nan)
@@ -33,17 +38,23 @@ def drop_null_values():
 
 drop_null_values()
 
+# Adding the names of the continents
 def get_continents():
     continents = {"AS":"Asia", "AF":"Africa", "NA":"North America","SA":"South America", "EU":"Europe", "OC":"Oceania"}
     airports_df['continent'] = airports_df['continent_code'].map(continents)
 
 get_continents()
 
+# Creating a new column with the city and the IATA code
 def get_airports():
     airports_df["airport"] = airports_df["city"] +" ("+ airports_df["IATA"] +")"
 
 get_airports()
 
+
+# ----------------------------------------- ROUTES DATABASE -----------------------------------------
+
+# Importing the CSV document with all the possible routes
 def get_routes_df():
     routes = pd.read_csv("../data/routes.csv", header=None)
     routes.columns = ["airline", "airline_id", "source", "source_airport_id", "destination", 
@@ -54,6 +65,7 @@ def get_routes_df():
 
 routes = get_routes_df()
 
+# Merging dataframes to obtain information about the airport of departure and arrival
 def merge_dataframes():
     routes_source = pd.merge(left=routes, right=airports_df[["IATA","latitude","longitude","continent_code"]], left_on="source", right_on="IATA")
     routes_source.drop(["IATA"], axis = 1, inplace = True)
@@ -67,6 +79,7 @@ def merge_dataframes():
 
 routes_df = merge_dataframes()
 
+# Calculating the distance between airports
 def get_distance():  
     distance = []
     for i in range(len(routes_df)):
@@ -77,7 +90,9 @@ def get_distance():
 
 routes_df["distance"] = get_distance()
 
+# Eliminating airports where no trade route exists
 airports_df = airports_df[airports_df.IATA.isin(list(routes_df.source) + list(routes_df.destination))]
 
+# Saving both dataframes into CSV files
 airports_df.to_csv('../data/airports_cleaned.csv', index=False)
 routes_df.to_csv('../data/routes_cleaned.csv', index=False)

@@ -14,12 +14,14 @@ routes = pd.read_csv("data/routes_cleaned.csv", keep_default_na=False)
 
 # ------------------------------------- STREAMLIT CONFIGURATION -------------------------------------
 
+st.set_page_config(layout="wide") 
 st.set_option('deprecation.showPyplotGlobalUse', False)
-st.markdown("<h1 style='text-align: center;'>Ready for a world tour? 🚀</h1>", unsafe_allow_html=True)
+title = st.empty()
+title.markdown("<h1 style='text-align: center;'>Ready for a world tour? 🚀</h1>", unsafe_allow_html=True)
 
 giphy = st.empty()
 with giphy:
-    col1, col2, col3 = st.columns([0.4,2,0.5])
+    col1, col2, col3 = st.columns([0.9,2,0.9])
     with col1:
         st.write("")
     with col2:
@@ -56,6 +58,7 @@ submit = form.form_submit_button('Plan your trip!')
 
 if submit:
 
+    title.empty()
     giphy.empty()
 
     start_airport = airports.loc[airports["airport"] == str(start_airport_st), "IATA"].iloc[0]

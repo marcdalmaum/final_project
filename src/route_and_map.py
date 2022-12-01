@@ -1,4 +1,4 @@
-# Libraries
+# LIBRARIES
 import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
